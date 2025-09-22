@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>MDX in Browser</title>
+    <script type="module">
+      import { compile } from "https://esm.sh/@mdx-js/mdx@2";
+      import * as runtime from "https://esm.sh/react/jsx-runtime";
+      import React from "https://esm.sh/react";
+      import { createRoot } from "https://esm.sh/react-dom/client";
+
+      const mdxText = `
+# Hello MDX
+<MyAlert>Works inside HTML!</MyAlert>
+<Counter />
+      `;
+
+      async function main() {
+        const compiled = await compile(mdxText, { outputFormat: "function-body" });
+        const Content = new Function(String(compiled))(runtime);
+
+        function MyAlert({ children }) {
+          return <div style={{ background: "lightblue", padding: "10px" }}>{children}</div>;
+        }
+
+        function Counter() {
+          const [count, setCount] = React.useState(0);
+          return <button onClick={() => setCount(count + 1)}>Count: {count}</button>;
+        }
+
+        const root = createRoot(document.getElementById("root"));
+        root.render(<Content components={{ MyAlert, Counter }} />);
+      }
+
+      main();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
